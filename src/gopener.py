@@ -3,6 +3,7 @@
 import RPi.GPIO as GPIO
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from time import sleep
+import ssl
 import json
 import logging
 
@@ -124,7 +125,7 @@ class OpenerServer(BaseHTTPRequestHandler):
             self.open_garage()
 
 
-def run(server_class=HTTPServer, handler_class=OpenerServer, port=8080, 
+def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443, 
         logf='/var/log/gopener.log'):
     GPIO.output(RELAY_PIN, GPIO.LOW)
     GPIO.add_event_detect(OPEN_PIN, GPIO.FALLING, callback=handler_class.opened, 
@@ -140,8 +141,11 @@ def run(server_class=HTTPServer, handler_class=OpenerServer, port=8080,
 
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
+    httpd.socket = ssl.wrap_socket(httpd.socket, certfile='./server.pem', 
+                                    server_side=True)
     logging.info('Starting httpd...\n')
-    logging.warning('The first command will only work if garage is in closed position')
+    logging.warning('The first command will only work if garage is in closed' 
+			+ 'position')
     httpd.serve_forever()
 
     GPIO.cleanup()

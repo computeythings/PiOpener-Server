@@ -53,6 +53,9 @@ call(['apt', 'install', 'python3-pip'])
 call(['pip3', 'install', 'RPi.GPIO'])
 print('Setting permissions')
 call(['chmod', '600', './src/config.json']) # Don't want anyone seeing our API key
+print('Creating SSL cert')
+call(['openssl', 'req', '-new', '-x509', '-keyout', './src/server.pem', '-out', 
+        './src/server.pem', '-days', '3650', '-nodes'])
 print('Migrating to /opt')
 call(['cp', '-r', '.', '/opt'])
 print('Creating systemd service')
