@@ -49,8 +49,7 @@ with open('./src/config.json', 'r+') as f:
     f.truncate()
 
 print('Installing dependencies')
-call(['apt', 'install', 'python3-pip'])
-call(['pip3', 'install', 'RPi.GPIO'])
+call(['apt', 'install', 'python3-rpi.gpio'])
 print('Setting permissions')
 call(['chmod', '600', './src/config.json']) # Don't want anyone seeing our API key
 print('Creating SSL cert')
