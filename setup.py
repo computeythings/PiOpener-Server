@@ -53,12 +53,12 @@ call(['apt', 'install', 'python3-pip'])
 call(['pip3', 'install', 'RPi.GPIO'])
 print('Setting permissions')
 call(['chmod', '600', './src/config.json']) # Don't want anyone seeing our API key
-call(['chmod', '+x', '.src/gopener.py'])
 print('Creating SSL cert')
 call(['openssl', 'req', '-new', '-x509', '-keyout', './src/server.pem', '-out', 
         './src/server.pem', '-days', '3650', '-nodes'])
 print('Migrating to /opt')
 call(['cp', '-r', '.', '/opt/garage-opener'])
+call(['chmod', '+x', '/opt/garage-opener/src/gopener.py'])
 print('Creating systemd service')
 call(['mv', './src/garageopener.service', 
         '/lib/systemd/system/garageopener.service'])
