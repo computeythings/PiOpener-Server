@@ -141,7 +141,7 @@ def run(server_class=HTTPServer, handler_class=OpenerServer, port=8080,
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     logging.info('Starting httpd...\n')
-    logging.warning('The first command WILL toggle garage regardless of position')
+    logging.warning('The first command will only work if garage is in closed position')
     httpd.serve_forever()
 
     GPIO.cleanup()
