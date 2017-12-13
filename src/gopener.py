@@ -15,7 +15,7 @@ with open('config.json', 'r') as f:
     CLOSED_PIN = config['CLOSED_SWITCH_PIN']
 
 IS_OPEN = False
-IS_CLOSED = True # inital state is assumed to be closed
+IS_CLOSED = False
 OPENING = False
 CLOSING = False
 
