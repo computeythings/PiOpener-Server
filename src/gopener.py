@@ -71,9 +71,9 @@ class OpenerServer(BaseHTTPRequestHandler):
 
     # Quickly toggle a relay closed and open to simulate a button press
     def toggle_garage(self):
-        GPIO.output(RELAY_PIN, GPIO.HIGH)
-        sleep(0.2)
         GPIO.output(RELAY_PIN, GPIO.LOW)
+        sleep(0.2)
+        GPIO.output(RELAY_PIN, GPIO.HIGH)
 
     """ 
     Since there's no open/close wire to connect to, we can only toggle the door.
@@ -127,7 +127,7 @@ class OpenerServer(BaseHTTPRequestHandler):
 
 def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443, 
         logf='/var/log/gopener.log'):
-    GPIO.output(RELAY_PIN, GPIO.LOW)
+    GPIO.output(RELAY_PIN, GPIO.HIGH)
     GPIO.add_event_detect(OPEN_PIN, GPIO.FALLING, callback=handler_class.opened, 
                             bouncetime=300)
     GPIO.add_event_detect(CLOSED_PIN, GPIO.FALLING, callback=handler_class.closed, 
