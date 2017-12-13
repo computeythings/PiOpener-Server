@@ -9,7 +9,7 @@ import logging
 
 with open('config.json', 'r') as f:
     config = json.load(f)
-    APIKEY = config['APIKEY']
+    ACCESS_TOKEN = config['ACCESS_TOKEN']
     RELAY_PIN = config['RELAY_PIN']
     OPEN_PIN = config['OPEN_SWITCH_PIN']
     CLOSED_PIN = config['CLOSED_SWITCH_PIN']
@@ -47,7 +47,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         self._set_response(200)
 
         if self.path == '/api' or self.path == '/api/':
-            if jdata['apikey'] == APIKEY:
+            if jdata['access_token'] == ACCESS_TOKEN:
                 if jdata['intent'] == 'OPEN':
                     self.wfile.write('Opening garage'.encode('utf-8'))
                     self.open_garage()
@@ -64,7 +64,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         else:
             self.wfile.write('INVALID URL'.encode('utf-8'))
 
-        jdata['apikey'] = '******'
+        jdata['access_token'] = '******'
 
         logging.info('POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
                     str(self.path), str(self.headers), jdata)

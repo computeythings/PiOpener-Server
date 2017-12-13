@@ -40,7 +40,7 @@ print('./src/Updating config.json')
 
 with open('./src/config.json', 'r+') as f:
     data = json.load(f)
-    data['APIKEY'] = apikey
+    data['ACCESS_TOKEN'] = apikey
     data['RELAY_PIN'] = relay_pin
     data['OPEN_SWITCH_PIN'] = open_pin
     data['CLOSED_SWITCH_PIN'] = close_pin
