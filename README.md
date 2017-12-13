@@ -24,7 +24,7 @@ To install, simply clone the directory, and run the setup script as root:
 
     $ git clone https://github.com/computeythings/garage-opener.git
     $ cd garage-opener
-    $ sudo setup.py
+    $ sudo python3 ./setup.py
 
 You should then be prompted to enter the pin to which the relay is connected as well as the input pins which the open/closed switches are connected.
 
