@@ -14,16 +14,16 @@ with open('config.json', 'r') as f:
     OPEN_PIN = config['OPEN_SWITCH_PIN']
     CLOSED_PIN = config['CLOSED_SWITCH_PIN']
 
-IS_OPEN = False
-IS_CLOSED = False
-OPENING = False
-CLOSING = False
-
 # Setup GPIO pins
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(RELAY_PIN, GPIO.OUT)
 GPIO.setup(OPEN_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(CLOSED_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP) 
+GPIO.setup(CLOSED_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+IS_OPEN = GPIO.input(OPEN_PIN)
+IS_CLOSED = GPIO.input(CLOSED_PIN)
+OPENING = False
+CLOSING = False
 
 
 class OpenerServer(BaseHTTPRequestHandler):
@@ -33,7 +33,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        logging.info('GET request,\nPath: %s\nHeaders:\n%s\n', str(self.path), 
+        logging.info('GET request,\nPath: %s\nHeaders:\n%s\n', str(self.path),
                     str(self.headers))
         self._set_response(404)
         self.wfile.write('This link does not support that type of request.'
@@ -75,7 +75,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         sleep(0.2)
         GPIO.output(RELAY_PIN, GPIO.HIGH)
 
-    """ 
+    """
     Since there's no open/close wire to connect to, we can only toggle the door.
     A software check is run to determine whether or not we should toggle
     given each command.
@@ -92,7 +92,6 @@ class OpenerServer(BaseHTTPRequestHandler):
         OPENING = True # set intent
         CLOSING = False
         self.toggle_garage()
-        IS_CLOSED = False
 
     def close_garage(self):
         logging.info('Closing garage');
@@ -102,38 +101,36 @@ class OpenerServer(BaseHTTPRequestHandler):
         CLOSING = True # set intent
         OPENING = False
         self.toggle_garage();
-        IS_OPEN = False
 
     # This is run when the open switch is triggered
     def opened(channel):
         logging.info('Garage is now open')
-        IS_OPEN = True
-        OPENING = False
-
-        # toggle again if intent was to close
-        if CLOSING:
-            self.close_garage()
+        IS_OPEN = GPIO.input(OPEN_PIN)
+        if IS_OPEN:
+            OPENING = False
+            if CLOSING: # toggle again if intent was to close
+                self.close_garage()
 
     # This is run when the closed switch is triggered
     def closed(channel):
         logging.info('Garage is now closed')
-        IS_CLOSED = True
-        CLOSING = False
+        IS_CLOSED = GPIO.input(CLOSED_PIN)
+        if IS_CLOSED
+            CLOSING = False
 
-        # toggle again if intent was to open
-        if OPENING:
-            self.open_garage()
+            if OPENING: # toggle again if intent was to open
+                self.open_garage()
 
 
-def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443, 
+def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
         logf='/var/log/gopener.log'):
     GPIO.output(RELAY_PIN, GPIO.HIGH)
-    GPIO.add_event_detect(OPEN_PIN, GPIO.FALLING, callback=handler_class.opened, 
+    GPIO.add_event_detect(OPEN_PIN, GPIO.BOTH, callback=handler_class.opened,
                             bouncetime=300)
-    GPIO.add_event_detect(CLOSED_PIN, GPIO.FALLING, callback=handler_class.closed, 
+    GPIO.add_event_detect(CLOSED_PIN, GPIO.BOTH, callback=handler_class.closed,
                             bouncetime=300)
 
-    logging.basicConfig(level=logging.INFO, 
+    logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
                         + '%(message)s',
                         datefmt='%m-%d %H:%M:%S',
@@ -141,11 +138,9 @@ def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
 
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    httpd.socket = ssl.wrap_socket(httpd.socket, certfile='./server.pem', 
+    httpd.socket = ssl.wrap_socket(httpd.socket, certfile='./server.pem',
                                     server_side=True)
     logging.info('Starting httpd...\n')
-    logging.warning('The first command will only work if garage is in closed' 
-			+ 'position')
     httpd.serve_forever()
 
     GPIO.cleanup()
