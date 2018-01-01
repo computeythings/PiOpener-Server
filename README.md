@@ -35,7 +35,7 @@ Once you've finished this, the script should migrate all files to `/opt` and set
 That's it! Your garage opener is now up and running and ready to receive some commands.
 
 ## API
-To control your garage door from other devices you must `POST` requests to `https://<raspberrypi.ip>/api/` and include the api key in the POST data as "access_token" as well as either OPEN, CLOSE, or TOGGLE as your "intent".
+To control your garage door from other devices you must `POST` requests to `https://<raspberrypi.ip>/api/` and include the api key in the POST data as "access_token" as well as either `OPEN`, `CLOSE`, `TOGGLE`, or `QUERY` as your "intent".
 
 An example would be a file payload.json
 
@@ -46,4 +46,8 @@ An example would be a file payload.json
 
 Followed by this command: `curl -kd @payload.json https://<raspberrypi.ip>:4443/api/`
 
-This should be followed by a response of "Opening garage" and the actual opening of your garage.
+This should be followed by a response of "Opening garage" and the actual opening of your garage if it is closed or nothing if it is already open.
+
+The `TOGGLE` intent will trigger the garage door regardless of its current position.
+
+`QUERY` is the only intent that will not trigger an action. It simply responds with `OPEN`, `CLOSED`, or `NEITHER` if it is somewhere in between. This is useful, for example, if all you want is to make sure your garage is closed after you leave.
