@@ -57,6 +57,13 @@ class OpenerServer(BaseHTTPRequestHandler):
                 elif jdata['intent'] == 'TOGGLE':
                     self.wfile.write('Toggling garage'.encode('utf-8'))
                     self.toggle_garage()
+                elif jdata['intent'] == 'QUERY':
+                    if IS_OPEN:
+                        self.wfile.write('OPEN')
+                    elif IS_CLOSED:
+                        self.wfile.write('CLOSED')
+                    else
+                        self.wfile.write('NEITHER')
                 else:
                     self.wfile.write('Invalid Command'.encode('utf-8'))
             else:
