@@ -22,8 +22,8 @@ class Opener:
         GPIO.add_event_detect(self.CLOSED_PIN, GPIO.BOTH,
                                 callback=self.closed, bouncetime=300)
 
-        self.IS_OPEN = GPIO.input(self.OPEN_PIN)
-        self.IS_CLOSED = GPIO.input(self.CLOSED_PIN)
+        self.IS_OPEN = not GPIO.input(self.OPEN_PIN)
+        self.IS_CLOSED = not GPIO.input(self.CLOSED_PIN)
         self.OPENING = False
         self.CLOSING = False
 
@@ -50,26 +50,22 @@ class Opener:
     """
     def open_garage(self):
         logging.info('Opening garage');
-        if self.IS_OPEN:
-            return
-
-        self.OPENING = True # set intent
         self.CLOSING = False
-        self.toggle_garage()
+        if not self.IS_OPEN:
+            self.OPENING = True # set intent
+            self.toggle_garage()
 
     def close_garage(self):
         logging.info('Closing garage');
-        if self.IS_CLOSED:
-            return
-
-        self.CLOSING = True # set intent
         self.OPENING = False
-        self.toggle_garage();
+        if not self.IS_CLOSED:
+            self.CLOSING = True # set intent
+            self.toggle_garage();
 
     # This is run when the open switch is triggered
     def opened(self, channel):
         logging.info('Garage is now open')
-        self.IS_OPEN = GPIO.input(self.OPEN_PIN)
+        self.IS_OPEN = not GPIO.input(self.OPEN_PIN)
         if self.IS_OPEN:
             self.OPENING = False
             if self.CLOSING: # toggle again if intent was to close
@@ -78,7 +74,7 @@ class Opener:
     # This is run when the closed switch is triggered
     def closed(self, channel):
         logging.info('Garage is now closed')
-        self.IS_CLOSED = GPIO.input(self.CLOSED_PIN)
+        self.IS_CLOSED = not GPIO.input(self.CLOSED_PIN)
         if self.IS_CLOSED:
             self.CLOSING = False
 
