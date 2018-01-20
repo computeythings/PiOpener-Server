@@ -1,11 +1,11 @@
 [Unit]
 Description=Garage Door Opener Service
- 
+
 [Service]
-ExecStart=/opt/garage-opener/src/gopener.py 4443 /var/log/garageopener.log
+ExecStart=/opt/garage-opener/src/server.py 4443 /var/log/garageopener.log
 WorkingDirectory=/opt/garage-opener/src/
 StandardOutput=inherit
- 
+
 [Install]
 WantedBy=multi-user.target
 Alias=garageopener.service
