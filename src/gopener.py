@@ -77,7 +77,6 @@ class Opener:
         self.IS_CLOSED = not GPIO.input(self.CLOSED_PIN)
         if self.IS_CLOSED:
             self.CLOSING = False
-
             if self.OPENING: # toggle again if intent was to open
                 self.open_garage()
 

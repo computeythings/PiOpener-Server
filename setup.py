@@ -34,7 +34,7 @@ while True:
 
 print('Generating API key...')
 for i in range(25):
-   apikey = apikey + ALPHANUM[randint(0,61)] 
+   apikey = apikey + ALPHANUM[randint(0,61)]
 
 print('./src/Updating config.json')
 
@@ -53,13 +53,13 @@ call(['apt', 'install', 'python3-rpi.gpio'])
 print('Setting permissions')
 call(['chmod', '600', './src/config.json']) # Don't want anyone seeing our API key
 print('Creating SSL cert')
-call(['openssl', 'req', '-new', '-x509', '-keyout', './src/server.pem', '-out', 
+call(['openssl', 'req', '-new', '-x509', '-keyout', './src/server.pem', '-out',
         './src/server.pem', '-days', '3650', '-nodes'])
 print('Migrating to /opt')
 call(['cp', '-r', '.', '/opt/garage-opener'])
-call(['chmod', '+x', '/opt/garage-opener/src/gopener.py'])
+call(['chmod', '+x', '/opt/garage-opener/src/server.py'])
 print('Creating systemd service')
-call(['mv', './src/garageopener.service', 
+call(['mv', './src/garageopener.service',
         '/lib/systemd/system/garageopener.service'])
 call(['systemctl', 'daemon-reload'])
 call(['systemctl', 'enable', 'garageopener.service'])
@@ -68,4 +68,3 @@ call(['systemctl', 'start', 'garageopener.service'])
 print('Complete!')
 print('\nYour API key is:\n\n{}'.format(apikey))
 print('\nMake sure you write it down in a safe place\n')
-
