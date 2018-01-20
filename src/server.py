@@ -13,12 +13,9 @@ with open('config.json', 'r') as f:
     RELAY_PIN = config['RELAY_PIN']
     OPEN_PIN = config['OPEN_SWITCH_PIN']
     CLOSED_PIN = config['CLOSED_SWITCH_PIN']
-
+OPENER = Opener(OPEN_PIN=OPEN_PIN, CLOSED_PIN=CLOSED_PIN, RELAY_PIN=RELAY_PIN)
 
 class OpenerServer(BaseHTTPRequestHandler):
-    def __init__(self):
-        BaseHTTPRequestHandler.__init__(self)
-        self.Opener = Opener(OPEN_PIN=OPEN_PIN, CLOSED_PIN=CLOSED_PIN, RELAY_PIN=RELAY_PIN)
     def _set_response(self, code):
         self.send_response(code)
         self.send_header('Content-type', 'text/plain')
@@ -41,17 +38,17 @@ class OpenerServer(BaseHTTPRequestHandler):
                 self._set_response(200)
                 if jdata['intent'] == 'OPEN':
                     self.wfile.write('Opening garage'.encode('utf-8'))
-                    Opener.open_garage()
+                    OPENER.open_garage()
                 elif jdata['intent'] == 'CLOSE':
                     self.wfile.write('Closing garage'.encode('utf-8'))
-                    Opener.close_garage()
+                    OPENER.close_garage()
                 elif jdata['intent'] == 'TOGGLE':
                     self.wfile.write('Toggling garage'.encode('utf-8'))
-                    Opener.toggle_garage()
+                    OPENER.toggle_garage()
                 elif jdata['intent'] == 'QUERY':
-                    if Opener.is_open():
+                    if OPENER.is_open():
                         self.wfile.write('OPEN')
-                    elif Opener.is_closed():
+                    elif OPENER.is_closed():
                         self.wfile.write('CLOSED')
                     else:
                         self.wfile.write('NEITHER')
