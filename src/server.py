@@ -47,11 +47,11 @@ class OpenerServer(BaseHTTPRequestHandler):
                     OPENER.toggle_garage()
                 elif jdata['intent'] == 'QUERY':
                     if OPENER.is_open():
-                        self.wfile.write('OPEN')
+                        self.wfile.write('OPEN'.encode('utf-8'))
                     elif OPENER.is_closed():
-                        self.wfile.write('CLOSED')
+                        self.wfile.write('CLOSED'.encode('utf-8'))
                     else:
-                        self.wfile.write('NEITHER')
+                        self.wfile.write('NEITHER'.encode('utf-8'))
                 else:
                     self._set_response(404)
                     self.wfile.write('Invalid Command'.encode('utf-8'))
@@ -65,7 +65,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         jdata['access_token'] = '******'
 
         logging.info('POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
-                    str(self.path), str(self.headers), jdata)
+                    str(self.path), str(self.headers), jdata['intent'])
 
 def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
         logf='/var/log/gopener.log'):
