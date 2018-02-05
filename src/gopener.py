@@ -53,12 +53,12 @@ class Opener:
         GPIO.output(self.RELAY_PIN, GPIO.LOW)
         sleep(0.2)
         GPIO.output(self.RELAY_PIN, GPIO.HIGH)
-        if OPENING or OPEN:
+        if self.OPENING or self.IS_OPEN:
             self.OPENING = False
             self.CLOSING = True
-        if CLOSING or CLOSED:
-            self.CLOSING = True
-            self.OPENING = False
+        if self.CLOSING or self.IS_CLOSED:
+            self.CLOSING = False
+            self.OPENING = True
         self.update_client()
 
     def open_garage(self):

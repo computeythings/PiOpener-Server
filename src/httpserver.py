@@ -4,18 +4,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import ssl
 import json
 import logging
-from gopener import Opener
 
-# Read config file
 with open('config.json', 'r') as f:
     config = json.load(f)
     ACCESS_TOKEN = config['ACCESS_TOKEN']
-    RELAY_PIN = config['RELAY_PIN']
-    OPEN_PIN = config['OPEN_SWITCH_PIN']
-    CLOSED_PIN = config['CLOSED_SWITCH_PIN']
-OPENER = Opener(OPEN_PIN=OPEN_PIN, CLOSED_PIN=CLOSED_PIN, RELAY_PIN=RELAY_PIN)
 
 class OpenerServer(BaseHTTPRequestHandler):
+    def __init__(self, garage_controller, *args, **kwargs):
+        self.garage_controller = garage_controller
+        super(OpenerServer, self).__init__(*args, **kwargs)
     def _set_response(self, code):
         self.send_response(code)
         self.send_header('Content-type', 'text/plain')
@@ -38,17 +35,17 @@ class OpenerServer(BaseHTTPRequestHandler):
                 self._set_response(200)
                 if jdata['intent'] == 'OPEN':
                     self.wfile.write('Opening garage'.encode('utf-8'))
-                    OPENER.open_garage()
+                    self.garage_controller.open_garage()
                 elif jdata['intent'] == 'CLOSE':
                     self.wfile.write('Closing garage'.encode('utf-8'))
-                    OPENER.close_garage()
+                    self.garage_controller.close_garage()
                 elif jdata['intent'] == 'TOGGLE':
                     self.wfile.write('Toggling garage'.encode('utf-8'))
-                    OPENER.toggle_garage()
+                    self.garage_controller.toggle_garage()
                 elif jdata['intent'] == 'QUERY':
-                    if OPENER.is_open():
+                    if self.garage_controller.is_open():
                         self.wfile.write('OPEN'.encode('utf-8'))
-                    elif OPENER.is_closed():
+                    elif self.garage_controller.is_closed():
                         self.wfile.write('CLOSED'.encode('utf-8'))
                     else:
                         self.wfile.write('NEITHER'.encode('utf-8'))
@@ -67,8 +64,20 @@ class OpenerServer(BaseHTTPRequestHandler):
         logging.info('POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
                     str(self.path), str(self.headers), jdata['intent'])
 
-def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
-        logf='/var/log/gopener.log'):
+class HTTPControlServer(HTTPServer):
+    def __init__(self, garage_controller, *args, **kwargs):
+        self.garage_controller = garage_controller
+        super(HTTPControlServer, self).__init__(*args, **kwargs)
+    def finish_request(self, request, client_address):
+        """Finish one request by instantiating RequestHandlerClass."""
+        self.RequestHandlerClass(self.garage_controller, request, client_address, self)
+    def __enter__(self):
+        return self
+    def __exit__(self, handler_class, port, logf):
+        self.__shutdown_request = True
+
+def run(server_class=HTTPControlServer, handler_class=OpenerServer, port=4443,
+        logf='/var/log/gopener.log', garage_controller=None):
 
     logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
@@ -77,22 +86,13 @@ def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
                         filename=logf)
 
     server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    httpd.socket = ssl.wrap_socket(httpd.socket,
-                                    certfile='/etc/ssl/certs/garageopener.crt',
-                                    keyfile='/etc/ssl/private/garageopener.key'
-                                    server_side=True)
-    logging.info('Starting httpd...\n')
-    httpd.serve_forever()
-
-
-if __name__ == '__main__':
-    from sys import argv
-
-    # Take CLI arguments as port and log location respectively
-    if len(argv) == 2:
-        run(port=int(argv[1]))
-    elif len(argv) == 3:
-        run(port=int(argv[1]), logf=argv[2])
-    else:
-        run()
+    with server_class(garage_controller, server_address, handler_class) as httpd:
+        httpd.socket = ssl.wrap_socket(httpd.socket,
+                                        certfile='/etc/ssl/certs/garageopener.crt',
+                                        keyfile='/etc/ssl/private/garageopener.key',
+                                        server_side=True)
+        logging.info('Starting httpd...\n')
+        try:
+            httpd.serve_forever()
+        finally:
+            httpd.shutdown()

@@ -31,12 +31,6 @@ while True:
         break
     except ValueError:
         print('Value must be an int.')
-
-while True:
-    try:
-        use_monitor = input('Would you like to enable the garage monitoring' +
-                            'service to be used with the android app? [Y/N]')
-                            .upper() == 'Y'
         break
 
 print('Generating API key...')
@@ -79,19 +73,13 @@ call(['mv', 'garageopener.crt', '/etc/ssl/certs/garageopener.crt'])
 call(['mv', 'garageopener.key', '/etc/ssl/private/garageopener.key'])
 print('Migrating to /opt')
 call(['cp', '-r', '.', '/opt/garage-opener'])
-call(['chmod', '+x', '/opt/garage-opener/src/httpserver.py'])
-call(['chmod', '+x', '/opt/garage-opener/src/sockserver.py'])
+call(['chmod', '+x', '/opt/garage-opener/src/main.py'])
 print('Creating systemd services')
 call(['mv', './src/garageopener.service',
         '/lib/systemd/system/garageopener.service'])
 call(['systemctl', 'daemon-reload'])
 call(['systemctl', 'enable', 'garageopener.service'])
 call(['systemctl', 'start', 'garageopener.service'])
-if use_monitor:
-    call(['mv', './src/garagemonitor.service',
-    '/lib/systemd/system/garagemonitor.service'])
-    call(['systemctl', 'enable', 'garagemonitor.service'])
-    call(['systemctl', 'start', 'garagemonitor.service'])
 
 print('Complete!')
 print('\nYour API key is:\n\n{}'.format(apikey))

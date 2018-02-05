@@ -5,20 +5,18 @@ import json
 import ssl
 import logging as Log
 from socketserver import StreamRequestHandler, ThreadingTCPServer
-from gopener import Opener
 
 with open('config.json', 'r') as f:
     config = json.load(f)
     ACCESS_TOKEN = config['ACCESS_TOKEN']
-    RELAY_PIN = config['RELAY_PIN']
-    OPEN_PIN = config['OPEN_SWITCH_PIN']
-    CLOSED_PIN = config['CLOSED_SWITCH_PIN']
-OPENER = Opener(OPEN_PIN=OPEN_PIN, CLOSED_PIN=CLOSED_PIN, RELAY_PIN=RELAY_PIN)
 
 class PersistentStreamHandler(StreamRequestHandler):
     timeout = 600
     active = True # Initialized sockets will always be active
 
+    def __init__(self, garage_controller, *args, **kwargs):
+        self.garage_controller = garage_controller
+        super(PersistentStreamHandler, self).__init__(*args, **kwargs)
     def setup(self):
         self.connection = self.request
 
@@ -30,7 +28,7 @@ class PersistentStreamHandler(StreamRequestHandler):
         self.rfile = self.connection.makefile('rb', self.rbufsize)
         self.wfile = self.connection.makefile('wb', self.wbufsize)
 
-        OPENER.socket_client = self
+        self.garage_controller.socket_client = self
         self.connection.sendall(str.encode('Connected.'))
 
     """ Run on initialization to handle socket request """
@@ -44,7 +42,7 @@ class PersistentStreamHandler(StreamRequestHandler):
                         self.active = False
                     elif self.data == 'REFRESH':
                         Log.info('Client refresh')
-                        OPENER.update_client()
+                        self.garage_controller.update_client()
                 else:
                     Log.info('Client disconnect')
                     self.active = False
@@ -63,7 +61,7 @@ class PersistentStreamHandler(StreamRequestHandler):
 
     """ Called after handle() """
     def finish(self):
-        OPENER.socket_client = None
+        self.garage_controller.socket_client = None
         if not self.wfile.closed:
             try:
                 self.wfile.flush()
@@ -75,10 +73,12 @@ class PersistentStreamHandler(StreamRequestHandler):
         self.rfile.close()
 
 class TCPStreamingServer(ThreadingTCPServer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, garage_controller, *args, **kwargs):
+        self.garage_controller = garage_controller
         super(TCPStreamingServer, self).__init__(*args, **kwargs)
-        self.validated_clients = []
-
+    def finish_request(self, request, client_address):
+        """Finish one request by instantiating RequestHandlerClass."""
+        self.RequestHandlerClass(self.garage_controller, request, client_address, self)
     def __enter__(self):
         return self
     def __exit__(self, handler_class, port, logf):
@@ -93,7 +93,7 @@ class TCPStreamingServer(ThreadingTCPServer):
 
 
 def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
-            port=4444, logf='/var/log/gopener.log'):
+            port=4444, logf='/var/log/gopener.log', garage_controller=None):
 
     Log.basicConfig(level=Log.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
@@ -103,7 +103,8 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
 
     server_address = ('', port)
 
-    with server_class(server_address, handler_class) as tcpd:
+    with server_class(garage_controller, server_address, handler_class) as tcpd:
+
         tcpd.socket = ssl.wrap_socket(tcpd.socket,
                                     certfile='/etc/ssl/certs/garageopener.crt',
                                     keyfile='/etc/ssl/private/garageopener.key',
@@ -113,14 +114,3 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
             tcpd.serve_forever()
         finally:
             tcpd.shutdown
-
-if __name__ == '__main__':
-    from sys import argv
-
-    # Take CLI arguments as port and log location respectively
-    if len(argv) == 2:
-        run(port=int(argv[1]))
-    elif len(argv) == 3:
-        run(port=int(argv[1]), logf=argv[2])
-    else:
-        run()
