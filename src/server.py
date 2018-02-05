@@ -72,13 +72,15 @@ def run(server_class=HTTPServer, handler_class=OpenerServer, port=4443,
 
     logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
-                        + '%(message)s',
+                        + 'HTTPD: %(message)s',
                         datefmt='%m-%d %H:%M:%S',
                         filename=logf)
 
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    httpd.socket = ssl.wrap_socket(httpd.socket, certfile='./server.pem',
+    httpd.socket = ssl.wrap_socket(httpd.socket,
+                                    certfile='/etc/ssl/certs/garageopener.crt',
+                                    keyfile='/etc/ssl/private/garageopener.key'
                                     server_side=True)
     logging.info('Starting httpd...\n')
     httpd.serve_forever()
