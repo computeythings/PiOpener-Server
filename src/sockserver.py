@@ -46,7 +46,7 @@ class PersistentStreamHandler(StreamRequestHandler):
                     elif self.data == 'OPEN':
                         Log.info('TCPD: Opening garage')
                         self.garage_controller.open_garage()
-                    elif self.data == 'CLOSE'
+                    elif self.data == 'CLOSE':
                         Log.info('TCPD: Closing garage')
                         self.garage_controller.close_garage()
                 else:
