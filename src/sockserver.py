@@ -43,6 +43,12 @@ class PersistentStreamHandler(StreamRequestHandler):
                     elif self.data == 'REFRESH':
                         Log.info('TCPD: Client refresh')
                         self.garage_controller.update_client()
+                    elif self.data == 'OPEN':
+                        Log.info('TCPD: Opening garage')
+                        self.garage_controller.open_garage()
+                    elif self.data == 'CLOSE'
+                        Log.info('TCPD: Closing garage')
+                        self.garage_controller.close_garage()
                 else:
                     Log.info('TCPD: Client disconnect')
                     self.active = False
