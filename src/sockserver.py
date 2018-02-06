@@ -38,19 +38,19 @@ class PersistentStreamHandler(StreamRequestHandler):
                 self.data = bytes.decode(self.connection.recv(1024).strip())
                 if self.data:
                     if self.data == 'CLOSE':
-                        Log.info('Client disconnect')
+                        Log.info('TCPD: Client disconnect')
                         self.active = False
                     elif self.data == 'REFRESH':
-                        Log.info('Client refresh')
+                        Log.info('TCPD: Client refresh')
                         self.garage_controller.update_client()
                 else:
-                    Log.info('Client disconnect')
+                    Log.info('TCPD: Client disconnect')
                     self.active = False
             except socket.timeout:
-                Log.warning('Socket timeout')
+                Log.warning('TCPD: Socket timeout')
                 break
             except socket.error:
-                Log.warning('Unexpected socket error')
+                Log.warning('TCPD: Unexpected socket error')
                 break
 
     """ Handles a dictionary input and sends data over the socket connection """
@@ -87,7 +87,7 @@ class TCPStreamingServer(ThreadingTCPServer):
     def verify_request(self, request, client_address):
             data = bytes.decode(request.recv(1024).strip())
             if data == ACCESS_TOKEN:
-                Log.info('client accepted at address: ' + str(client_address))
+                Log.info('TCPD: client accepted at address: ' + str(client_address))
                 return True
             return False
 
@@ -97,7 +97,7 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
 
     Log.basicConfig(level=Log.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
-                        + 'TCPD: %(message)s',
+                        + '%(message)s',
                         datefmt='%m-%d %H:%M:%S',
                         filename=logf)
 
@@ -109,7 +109,7 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
                                     certfile='/etc/ssl/certs/garageopener.crt',
                                     keyfile='/etc/ssl/private/garageopener.key',
                                     server_side=True)
-        Log.info('Starting tcpd...\n')
+        Log.info('TCPD: Starting tcpd...\n')
         try:
             tcpd.serve_forever()
         finally:

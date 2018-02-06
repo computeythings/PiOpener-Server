@@ -56,7 +56,7 @@ call(['openssl', 'req', '-new', '-x509', '-keyout', 'garageopener.pem', '-out',
         'garageopener.pem', '-days', '36500', '-nodes']) # certs are good for 100 years
 print('Creating crt and key files')
 pem = open('garageopener.pem').read()
-key, cert = pem.spit('-----END PRIVATE KEY-----\n')
+key, cert = pem.split('-----END PRIVATE KEY-----\n')
 keyfile = open('garageopener.key', 'w')
 keyfile.write(key + '-----END PRIVATE KEY-----')
 keyfile.close()

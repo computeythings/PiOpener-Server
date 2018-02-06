@@ -19,7 +19,7 @@ class OpenerServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        logging.info('GET request,\nPath: %s\nHeaders:\n%s\n', str(self.path),
+        logging.info('HTTPD: GET request,\nPath: %s\nHeaders:\n%s\n', str(self.path),
                     str(self.headers))
         self._set_response(405)
         self.wfile.write('This link does not support that type of request.'
@@ -61,7 +61,7 @@ class OpenerServer(BaseHTTPRequestHandler):
 
         jdata['access_token'] = '******'
 
-        logging.info('POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
+        logging.info('HTTPD: POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n',
                     str(self.path), str(self.headers), jdata['intent'])
 
 class HTTPControlServer(HTTPServer):
@@ -81,7 +81,7 @@ def run(server_class=HTTPControlServer, handler_class=OpenerServer, port=4443,
 
     logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
-                        + 'HTTPD: %(message)s',
+                        + '%(message)s',
                         datefmt='%m-%d %H:%M:%S',
                         filename=logf)
 
@@ -91,7 +91,7 @@ def run(server_class=HTTPControlServer, handler_class=OpenerServer, port=4443,
                                         certfile='/etc/ssl/certs/garageopener.crt',
                                         keyfile='/etc/ssl/private/garageopener.key',
                                         server_side=True)
-        logging.info('Starting httpd...\n')
+        logging.info('HTTPD: Starting httpd...\n')
         try:
             httpd.serve_forever()
         finally:
