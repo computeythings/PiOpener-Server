@@ -29,7 +29,8 @@ class PersistentStreamHandler(StreamRequestHandler):
         self.wfile = self.connection.makefile('wb', self.wbufsize)
 
         self.garage_controller.socket_client = self
-        self.connection.sendall(str.encode('Connected.'))
+        self.connection.sendall(str.encode('Connected.\n'))
+        self.wfile.flush()
 
     """ Run on initialization to handle socket request """
     def handle(self):
@@ -56,8 +57,9 @@ class PersistentStreamHandler(StreamRequestHandler):
     """ Handles a dictionary input and sends data over the socket connection """
     def update(self, data):
         update_data = json.dumps(data)
-        byte_data = str.encode(update_data)
+        byte_data = str.encode(update_data + '\n')
         self.connection.sendall(byte_data)
+        self.wfile.flush()
 
     """ Called after handle() """
     def finish(self):
