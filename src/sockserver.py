@@ -11,7 +11,6 @@ with open('config.json', 'r') as f:
     ACCESS_TOKEN = config['ACCESS_TOKEN']
 
 class PersistentStreamHandler(StreamRequestHandler):
-    timeout = 600
     active = True # Initialized sockets will always be active
 
     def __init__(self, garage_controller, *args, **kwargs):
