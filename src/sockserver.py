@@ -49,6 +49,8 @@ class PersistentStreamHandler(StreamRequestHandler):
                     elif self.data == 'CLOSE_GARAGE':
                         Log.info('TCPD: Closing garage')
                         self.garage_controller.close_garage()
+                    else:
+                        Log.info('TCPD: Client sent: ' + self.data)
                 else:
                     Log.info('TCPD: Client disconnect')
                     self.active = False
@@ -80,6 +82,7 @@ class PersistentStreamHandler(StreamRequestHandler):
         self.rfile.close()
 
 class TCPStreamingServer(ThreadingTCPServer):
+    allow_reuse_address = True # Prevents failure on module restart
     def __init__(self, garage_controller, *args, **kwargs):
         self.garage_controller = garage_controller
         super(TCPStreamingServer, self).__init__(*args, **kwargs)

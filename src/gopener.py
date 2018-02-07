@@ -25,16 +25,16 @@ class Opener:
         GPIO.add_event_detect(self.CLOSED_PIN, GPIO.BOTH,
                                 callback=self.closed, bouncetime=300)
 
-        self.IS_OPEN = not GPIO.input(self.OPEN_PIN)
-        self.IS_CLOSED = not GPIO.input(self.CLOSED_PIN)
+        self.IS_FULLY_OPEN = not GPIO.input(self.OPEN_PIN)
+        self.IS_FULLY_CLOSED = not GPIO.input(self.CLOSED_PIN)
         self.OPENING = False
         self.CLOSING = False
 
     def is_open(self):
-        return self.IS_OPEN
+        return self.IS_FULLY_OPEN
 
     def is_closed(self):
-        return self.IS_CLOSED
+        return self.IS_FULLY_CLOSED
 
     """
 
@@ -49,59 +49,64 @@ class Opener:
     """
 
     """ Quickly toggle a relay closed and open to simulate a button press """
-    def toggle_garage(self):
+    def toggle(self):
         GPIO.output(self.RELAY_PIN, GPIO.LOW)
         sleep(0.2)
         GPIO.output(self.RELAY_PIN, GPIO.HIGH)
-        if self.OPENING or self.IS_OPEN:
-            self.OPENING = False
-            self.CLOSING = True
-        if self.CLOSING or self.IS_CLOSED:
-            self.CLOSING = False
-            self.OPENING = True
-        self.update_client()
+
+    def toggle_garage(self):
+        if self.OPENING or self.IS_FULLY_OPEN:
+            self.close_garage()
+        elif self.CLOSING or self.IS_FULLY_CLOSED:
+            self.open_garage()
+        else
+            self.toggle()
 
     def open_garage(self):
         logging.info('Opening garage');
         self.CLOSING = False
-        if not self.IS_OPEN:
+        if not self.IS_FULLY_OPEN:
             self.OPENING = True # set intent
-            self.toggle_garage()
+            self.toggle()
             self.update_client()
 
     def close_garage(self):
         logging.info('Closing garage');
         self.OPENING = False
-        if not self.IS_CLOSED:
+        if not self.IS_FULLY_CLOSED:
             self.CLOSING = True # set intent
-            self.toggle_garage();
+            self.toggle();
             self.update_client()
 
     """ This is run when the open switch is triggered """
     def opened(self, channel):
-        logging.info('Garage is now open')
-        self.IS_OPEN = not GPIO.input(self.OPEN_PIN)
-        if self.IS_OPEN:
+        self.IS_FULLY_OPEN = not GPIO.input(self.OPEN_PIN)
+        if self.IS_FULLY_OPEN:
+            logging.info('Garage is now open')
             self.OPENING = False
             if self.CLOSING: # toggle again if intent was to close
                 self.close_garage()
+        else:
+            logging.info('Garage is no longer open')
         self.update_client()
 
     """ This is run when the closed switch is triggered """
     def closed(self, channel):
-        logging.info('Garage is now closed')
-        self.IS_CLOSED = not GPIO.input(self.CLOSED_PIN)
-        if self.IS_CLOSED:
+        self.IS_FULLY_CLOSED = not GPIO.input(self.CLOSED_PIN)
+        if self.IS_FULLY_CLOSED:
+            logging.info('Garage is now closed')
             self.CLOSING = False
             if self.OPENING: # toggle again if intent was to open
                 self.open_garage()
+        else:
+            logging.info('Garage is no longer closed')
         self.update_client()
 
     """ Status info for every volatile variable """
     def status(self):
         data = {}
-        data['OPEN'] = self.IS_OPEN
-        data['CLOSED'] = self.IS_CLOSED
+        data['OPEN'] = self.IS_FULLY_OPEN
+        data['CLOSED'] = self.IS_FULLY_CLOSED
         data['OPENING'] = self.OPENING
         data['CLOSING'] = self.CLOSING
         return data
