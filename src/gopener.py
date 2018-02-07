@@ -59,7 +59,7 @@ class Opener:
             self.close_garage()
         elif self.CLOSING or self.IS_FULLY_CLOSED:
             self.open_garage()
-        else
+        else:
             self.toggle()
 
     def open_garage(self):
