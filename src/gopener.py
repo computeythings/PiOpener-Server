@@ -2,7 +2,7 @@
 
 import RPi.GPIO as GPIO
 from time import sleep
-import logging
+import logging as Log
 
 class Opener:
     def __init__(self, OPEN_PIN, CLOSED_PIN, RELAY_PIN, socket_client=None):
@@ -60,46 +60,51 @@ class Opener:
         elif self.CLOSING or self.IS_FULLY_CLOSED:
             self.open_garage()
         else:
+            Log.info('Status unverifiable: toggling garage.')
             self.toggle()
 
     def open_garage(self):
-        logging.info('Opening garage');
         self.CLOSING = False
         if not self.IS_FULLY_OPEN:
+            Log.info('Opening garage')
             self.OPENING = True # set intent
             self.toggle()
             self.update_client()
+        else:
+            Log.info('Garage is already closed.')
 
     def close_garage(self):
-        logging.info('Closing garage');
         self.OPENING = False
         if not self.IS_FULLY_CLOSED:
+            Log.info('Closing garage')
             self.CLOSING = True # set intent
             self.toggle();
             self.update_client()
+        else:
+            Log.info('Garage is already closed.')
 
     """ This is run when the open switch is triggered """
     def opened(self, channel):
         self.IS_FULLY_OPEN = not GPIO.input(self.OPEN_PIN)
         if self.IS_FULLY_OPEN:
-            logging.info('Garage is now open')
+            Log.info('Garage is now open')
             self.OPENING = False
             if self.CLOSING: # toggle again if intent was to close
                 self.close_garage()
         else:
-            logging.info('Garage is no longer open')
+            Log.info('Garage is no longer open')
         self.update_client()
 
     """ This is run when the closed switch is triggered """
     def closed(self, channel):
         self.IS_FULLY_CLOSED = not GPIO.input(self.CLOSED_PIN)
         if self.IS_FULLY_CLOSED:
-            logging.info('Garage is now closed')
+            Log.info('Garage is now closed')
             self.CLOSING = False
             if self.OPENING: # toggle again if intent was to open
                 self.open_garage()
         else:
-            logging.info('Garage is no longer closed')
+            Log.info('Garage is no longer closed')
         self.update_client()
 
     """ Status info for every volatile variable """
@@ -120,5 +125,5 @@ class Opener:
     """ Run on garbage collection """
     def __del__(self):
         # Clear pins
-        logging.debug('Cleaning up GPIO')
+        Log.debug('Cleaning up GPIO')
         GPIO.cleanup()
