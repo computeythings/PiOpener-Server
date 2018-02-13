@@ -42,7 +42,7 @@ class Opener:
             self.opened()
 
     def close_trigger(self, channel):
-        sleep(0.005)
+        sleep(0.01)
         if(GPIO.input(channel)):
             self.opening()
         else:
