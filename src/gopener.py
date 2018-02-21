@@ -14,7 +14,7 @@ class Opener:
         self.RELAY_PIN = RELAY_PIN
 
         # if defined should be used to send a client status data
-        self.socket_client = socket_client
+        self.socket_clients = []
 
         # Setup GPIO pins
         GPIO.setmode(GPIO.BOARD)
@@ -145,11 +145,18 @@ class Opener:
         data['CLOSING'] = self.CLOSING
         return data
 
+    """ Add a client to the list to be updated on state changes """
+    def add_client(self, client):
+        self.socket_clients.append(client)
+    """ Remove a client from the list to be updated on state changes """
+    def remove_client(self, client):
+        self.socket_clients.remove(client)
+
     """ This is run on any state change and will return data to a socket
     client that has implemented an update callback method. """
     def update_client(self):
-        if self.socket_client:
-            self.socket_client.update(self.status())
+        for client in self.socket_clients:
+            client.update(self.status())
 
     """ Run on garbage collection """
     def __del__(self):

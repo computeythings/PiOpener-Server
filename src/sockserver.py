@@ -27,7 +27,7 @@ class PersistentStreamHandler(StreamRequestHandler):
         self.rfile = self.connection.makefile('rb', self.rbufsize)
         self.wfile = self.connection.makefile('wb', self.wbufsize)
 
-        self.garage_controller.socket_client = self
+        self.garage_controller.add_client(self)
         self.connection.sendall(str.encode('Connected.\n'))
         self.wfile.flush()
 
@@ -70,7 +70,7 @@ class PersistentStreamHandler(StreamRequestHandler):
 
     """ Called after handle() """
     def finish(self):
-        self.garage_controller.socket_client = None
+        self.garage_controller.remove_client(self)
         if not self.wfile.closed:
             try:
                 self.wfile.flush()
