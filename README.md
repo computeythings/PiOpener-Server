@@ -53,4 +53,4 @@ The `TOGGLE` intent will trigger the garage door regardless of its current posit
 `QUERY` is the only intent that will not trigger an action. It simply responds with `OPEN`, `CLOSED`, or `NEITHER` if it is somewhere in between. This is useful, for example, if all you want is to make sure your garage is closed after you leave.
 
 ## TCP server
-The TCP server opens a port on the server to accept a socket connection which will allow you to monitor and get real-time updates of the garage door status. This is intended to be used with the garagemonitor Android app.
+The TCP server opens a port on the server to accept a socket connection which will allow you to monitor and get real-time updates of the garage door status. This is intended to be used with the PiOpener-Android app.
