@@ -32,19 +32,19 @@ with open('./src/config.json', 'r+') as f:
 
     print('Using GPIO.BOARD layout');
 
-    while not data['RELAY_PIN'] == 0:
+    while data['RELAY_PIN'] == 0:
         try:
             data['RELAY_PIN'] = int(
                         input('Which pin was connected to the relay? '))
         except ValueError:
             print('Value must be an int.')
-    while not data['OPEN_SWITCH_PIN'] == 0:
+    while data['OPEN_SWITCH_PIN'] == 0:
         try:
             data['OPEN_SWITCH_PIN'] = int(
                         input('Which pin was connected to the OPEN switch? '))
         except ValueError:
             print('Value must be an int.')
-    while not data['CLOSED_SWITCH_PIN'] == 0:
+    while data['CLOSED_SWITCH_PIN'] == 0:
         try:
             data['CLOSED_SWITCH_PIN'] = int(
                         input('Which pin was connected to the CLOSE switch? '))
@@ -57,7 +57,10 @@ with open('./src/config.json', 'r+') as f:
         for i in range(25):
            apikey = apikey + ALPHANUM[randint(0,len(ALPHANUM)-1)]
         data['ACCESS_TOKEN'] = apikey
-        
+    else:
+        apikey = data['ACCESS_TOKEN']
+
+
     f.seek(0)
     json.dump(data, f, indent=4)
     f.truncate()
