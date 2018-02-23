@@ -116,7 +116,7 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
     with server_class(garage_controller, server_address, handler_class) as tcpd:
 
         tcpd.socket = ssl.wrap_socket(tcpd.socket,
-                                    certfile='/etc/ssl/certs/garageopener.crt',
+                                    certfile='/etc/ssl/certs/garageopener.pem',
                                     keyfile='/etc/ssl/private/garageopener.key',
                                     server_side=True)
         Log.info('TCPD: Starting tcpd...\n')

@@ -88,7 +88,7 @@ def run(server_class=HTTPControlServer, handler_class=OpenerServer, port=4443,
     server_address = ('', port)
     with server_class(garage_controller, server_address, handler_class) as httpd:
         httpd.socket = ssl.wrap_socket(httpd.socket,
-                                        certfile='/etc/ssl/certs/garageopener.crt',
+                                        certfile='/etc/ssl/certs/garageopener.pem',
                                         keyfile='/etc/ssl/private/garageopener.key',
                                         server_side=True)
         Log.info('HTTPD: Starting httpd...\n')
