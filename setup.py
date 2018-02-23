@@ -17,34 +17,34 @@ with open('./src/config.json', 'r+') as f:
     data = json.load(f)
 
     # Option to update pin layout
-    if not data['RELAY_PIN'] == '':
+    if not data['RELAY_PIN'] == 0:
         answer = input('Update the relay pin value? (Y/N)')
         if answer.upper() == 'Y':
-            data['RELAY_PIN'] = ''
-    if not data['OPEN_SWITCH_PIN'] == '':
+            data['RELAY_PIN'] = 0
+    if not data['OPEN_SWITCH_PIN'] == 0:
         answer = input('Update the open pin value? (Y/N)')
         if answer.upper() == 'Y':
-            data['OPEN_SWITCH_PIN'] = ''
-    if not data['CLOSED_SWITCH_PIN'] == '':
+            data['OPEN_SWITCH_PIN'] = 0
+    if not data['CLOSED_SWITCH_PIN'] == 0:
         answer = input('Update the close pin value? (Y/N)')
         if answer.upper() == 'Y':
-            data['CLOSED_SWITCH_PIN'] = ''
+            data['CLOSED_SWITCH_PIN'] = 0
 
     print('Using GPIO.BOARD layout');
 
-    while not data['RELAY_PIN'] == '':
+    while not data['RELAY_PIN'] == 0:
         try:
             data['RELAY_PIN'] = int(
                         input('Which pin was connected to the relay? '))
         except ValueError:
             print('Value must be an int.')
-    while not data['OPEN_SWITCH_PIN'] == '':
+    while not data['OPEN_SWITCH_PIN'] == 0:
         try:
             data['OPEN_SWITCH_PIN'] = int(
                         input('Which pin was connected to the OPEN switch? '))
         except ValueError:
             print('Value must be an int.')
-    while not data['CLOSED_SWITCH_PIN'] == '':
+    while not data['CLOSED_SWITCH_PIN'] == 0:
         try:
             data['CLOSED_SWITCH_PIN'] = int(
                         input('Which pin was connected to the CLOSE switch? '))
