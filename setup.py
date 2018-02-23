@@ -99,6 +99,8 @@ if not path.isfile('/lib/systemd/system/garageopener.service'):
     call(['systemctl', 'daemon-reload'])
     call(['systemctl', 'enable', 'garageopener.service'])
     call(['systemctl', 'start', 'garageopener.service'])
+else:
+    call(['systemctl', 'restart', 'garageopener.service'])
 
 print('Complete!')
 print('\nYour API key is:\n\n{}'.format(apikey))
