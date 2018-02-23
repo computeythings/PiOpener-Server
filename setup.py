@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import json
-from os import getuid
+from os import getuid, path
 from random import randint
 from subprocess import call
 
@@ -50,26 +50,39 @@ with open('./src/config.json', 'r+') as f:
     f.truncate()
 
 print('Installing dependencies')
-call(['apt', 'install', 'python3-rpi.gpio'])
-print('Creating SSL cert')
-call(['openssl', 'req', '-new', '-x509', '-keyout', 'garageopener.key', '-out',
-        'garageopener.pem', '-days', '36500', '-nodes']) # certs are good for 100 years
-print('Setting permissions')
-call(['chmod', '600', 'src/config.json'])
-call(['chmod', '600', 'garageopener.pem'])
-call(['chmod', '600', 'garageopener.key'])
-print('Moving keys')
-call(['mv', 'garageopener.pem', '/etc/ssl/certs/garageopener.pem'])
-call(['mv', 'garageopener.key', '/etc/ssl/private/garageopener.key'])
+call(['apt-get', 'update'])
+call(['apt-get', 'install', 'python3-rpi.gpio'])
+
+# only create new certs if they don't already exist
+if (
+        not (path.isfile('/etc/ssl/private/garageopener.key')
+        or path.isfile('/etc/ssl/certs/garageopener.pem') )
+    ):
+    print('Creating SSL cert')
+    # certs are good for 100 years
+    call(['openssl', 'req', '-new', '-x509', '-keyout', 'garageopener.key',
+            '-out', 'garageopener.pem', '-days', '36500', '-nodes'])
+    print('Setting permissions')
+    call(['chmod', '600', 'src/config.json'])
+    call(['chmod', '600', 'garageopener.pem'])
+    call(['chmod', '600', 'garageopener.key'])
+    print('Moving keys')
+    call(['mv', 'garageopener.pem', '/etc/ssl/certs/garageopener.pem'])
+    call(['mv', 'garageopener.key', '/etc/ssl/private/garageopener.key'])
+
+
 print('Migrating to /opt')
 call(['cp', '-r', '.', '/opt/garage-opener'])
 call(['chmod', '+x', '/opt/garage-opener/src/main.py'])
-print('Creating systemd services')
-call(['mv', './src/garageopener.service',
-        '/lib/systemd/system/garageopener.service'])
-call(['systemctl', 'daemon-reload'])
-call(['systemctl', 'enable', 'garageopener.service'])
-call(['systemctl', 'start', 'garageopener.service'])
+
+# only create systemd service if it doesn't already exist
+if not path.isfile('/lib/systemd/system/garageopener.service'):
+    print('Creating systemd services')
+    call(['mv', './src/garageopener.service',
+            '/lib/systemd/system/garageopener.service'])
+    call(['systemctl', 'daemon-reload'])
+    call(['systemctl', 'enable', 'garageopener.service'])
+    call(['systemctl', 'start', 'garageopener.service'])
 
 print('Complete!')
 print('\nYour API key is:\n\n{}'.format(apikey))
