@@ -29,7 +29,12 @@ def parse_args():
             metavar='port', help='Set the HTTP server port')
     parser.add_option('-l', '--logfile', default='/var/log/gopener.log',
             metavar='file', dest='log', help='Set the log file location.')
-
+    parser.add_option('-c', '--cert', default='/etc/ssl/certs/garageopener.pem',
+            metavar='file', dest='log',
+            help='Specify the SSL certificate location.')
+    parser.add_option('-k', '--key', default='/etc/ssl/private/garageopener.key',
+            metavar='file', dest='log',
+            help='Specify the SSL private key location.')
     parser.usage = 'Usage: %prog [options]'
     (options, args) = parser.parse_args()
 

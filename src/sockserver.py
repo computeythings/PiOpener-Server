@@ -103,7 +103,9 @@ class TCPStreamingServer(ThreadingTCPServer):
 
 
 def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
-            port=4444, logf='/var/log/gopener.log', garage_controller=None):
+            port=4444, logf='/var/log/gopener.log', garage_controller=None,
+            cert='/etc/ssl/certs/garageopener.pem',
+            key='/etc/ssl/private/garageopener.key'):
 
     Log.basicConfig(level=Log.INFO,
                         format='[%(asctime)s] %(levelname)-8s: '
@@ -115,9 +117,7 @@ def run(server_class=TCPStreamingServer, handler_class=PersistentStreamHandler,
 
     with server_class(garage_controller, server_address, handler_class) as tcpd:
 
-        tcpd.socket = ssl.wrap_socket(tcpd.socket,
-                                    certfile='/etc/ssl/certs/garageopener.pem',
-                                    keyfile='/etc/ssl/private/garageopener.key',
+        tcpd.socket = ssl.wrap_socket(tcpd.socket, certfile=cert, keyfile=key,
                                     server_side=True)
         Log.info('TCPD: Starting tcpd...\n')
         try:
